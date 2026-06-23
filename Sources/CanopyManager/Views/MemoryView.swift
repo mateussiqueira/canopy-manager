@@ -100,7 +100,7 @@ struct MemoryView: View {
     }
 
     // Check if swap on SSD exists
-    s.swapOnSSD = FileManager.default.fileExists(atPath: "/Volumes/BACKUP/.mac-memory-optimizer/swap/swapfile_64gb")
+    s.swapOnSSD = FileManager.default.fileExists(atPath: "/Volumes/BACKUP/.mac-memory-optimizer/swap/swapfile_128gb")
 
     return s
   }
@@ -272,14 +272,14 @@ struct MemoryView: View {
   var swapSection: some View {
     VStack(alignment: .leading, spacing: 10) {
       Label("Swap no Thunderbolt SSD", systemImage: "externaldrive.badge.bolt").font(.headline)
-      Text("Cria swapfile de 64GB no SSD externo — libera RAM e swap do SSD interno")
+      Text("Cria swapfile de 128GB no SSD externo — libera RAM e swap do SSD interno")
         .font(.caption).foregroundStyle(.secondary)
 
       HStack(spacing: 12) {
         Button(action: { Task { await createSwap() } }) {
           HStack {
             Image(systemName: stats.swapOnSSD ? "checkmark.circle.fill" : "play.fill")
-            Text(stats.swapOnSSD ? "Swap já existe" : "Criar Swap 64GB")
+            Text(stats.swapOnSSD ? "Swap já existe" : "Criar Swap 128GB")
           }.frame(maxWidth: .infinity)
         }
         .buttonStyle(.borderedProminent).tint(.blue).disabled(isMoving || stats.swapOnSSD)
@@ -293,7 +293,7 @@ struct MemoryView: View {
       if stats.swapOnSSD {
         HStack {
           Image(systemName: "checkmark.shield.fill").foregroundStyle(.green)
-          Text("Swapfile de 64GB criado no Thunderbolt SSD. Clique em 'Ativar Swap' para ativar (requer senha).")
+          Text("Swapfile de 128GB criado no Thunderbolt SSD. Clique em 'Ativar Swap' para ativar (requer senha).")
             .font(.caption).foregroundStyle(.secondary)
         }
         .padding(8).background(Color.green.opacity(0.06)).cornerRadius(8)
@@ -332,14 +332,14 @@ struct MemoryView: View {
 
   func createSwap() async {
     isMoving = true
-    moveLog += "🔄 Criando swapfile de 64GB no Thunderbolt SSD...\n"
+    moveLog += "🔄 Criando swapfile de 128GB no Thunderbolt SSD...\n"
     let result = await MLXService.shell("""
       mkdir -p "/Volumes/BACKUP/.mac-memory-optimizer/swap" && \
-      SWAPFILE="/Volumes/BACKUP/.mac-memory-optimizer/swap/swapfile_64gb" && \
+      SWAPFILE="/Volumes/BACKUP/.mac-memory-optimizer/swap/swapfile_128gb" && \
       if [ ! -f "$SWAPFILE" ]; then \
-        dd if=/dev/zero of="$SWAPFILE" bs=1m count=65536 2>&1 | tail -1 && \
+        dd if=/dev/zero of="$SWAPFILE" bs=1m count=131072 2>&1 | tail -1 && \
         chmod 600 "$SWAPFILE" && \
-        echo "✅ Swapfile de 64GB criado"; \
+        echo "✅ Swapfile de 128GB criado"; \
       else echo "✅ Swapfile já existe"; fi
     """, timeout: 600)
     if case .success(let out) = result { moveLog += out + "\n" }
@@ -352,7 +352,7 @@ struct MemoryView: View {
     moveLog += "⚡ Ativando swap no Thunderbolt SSD...\n"
     let result = await MLXService.shell("""
       echo "⚠️  Para ativar o swap, execute no Terminal:"
-      echo "  sudo vnutil -a '/Volumes/BACKUP/.mac-memory-optimizer/swap/swapfile_64gb'"
+      echo "  sudo vnutil -a '/Volumes/BACKUP/.mac-memory-optimizer/swap/swapfile_128gb'"
       echo ""
       echo "Isso requer senha de administrador."
     """, timeout: 10)
