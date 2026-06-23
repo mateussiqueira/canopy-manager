@@ -18,6 +18,11 @@ struct ContentView: View {
       ModelManagementView()
         .environmentObject(state)
         .tabItem { Label("Modelos", systemImage: "square.stack.3d.up.fill") }
+
+      // Tab 4: Memory
+      MemoryView()
+        .environmentObject(state)
+        .tabItem { Label("Memória", systemImage: "memorychip") }
     }
     .frame(minWidth: 800, minHeight: 600)
     .sheet(isPresented: $state.showDownloadPanel) {
