@@ -7,9 +7,7 @@ struct CanopyManagerApp: App {
   var body: some Scene {
     Window("Canopy Manager", id: "main") {
       ContentView()
-        .onAppear {
-          NSApp.setActivationPolicy(.regular)
-        }
+        .onAppear { NSApp.setActivationPolicy(.regular) }
     }
     .windowResizability(.contentMinSize)
     .windowToolbarStyle(.unified)
@@ -19,9 +17,9 @@ struct CanopyManagerApp: App {
           NSApp.orderFrontStandardAboutPanel(
             options: [
               .applicationName: "Canopy Manager",
-              .applicationVersion: "2.0.0",
+              .applicationVersion: "2.1.0",
               .credits: NSAttributedString(
-                string: "Gerenciamento local de modelos MLX para Apple Silicon.\nParte do ecossistema Canopy.",
+                string: "Chat multimodal + MLX + Apple Silicon\nParte do ecossistema Canopy.",
                 attributes: [.font: NSFont.systemFont(ofSize: 11)]
               )
             ]
@@ -33,7 +31,6 @@ struct CanopyManagerApp: App {
           NotificationCenter.default.post(name: .toggleServer, object: nil)
         }
         .keyboardShortcut(".", modifiers: .command)
-
         Button("Escaneear Modelos") {
           NotificationCenter.default.post(name: .scanModels, object: nil)
         }
@@ -52,7 +49,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   private var menuBarItem: NSStatusItem?
 
   func applicationDidFinishLaunching(_ notification: Notification) {
-    // Wait for content view to exist then observe
     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
       self.setupMenuBar()
     }
@@ -61,7 +57,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   func setupMenuBar() {
     menuBarItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     guard let button = menuBarItem?.button else { return }
-
     let image = NSImage(systemSymbolName: "leaf.fill", accessibilityDescription: "Canopy Manager")
     image?.isTemplate = true
     button.image = image
@@ -70,11 +65,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     menu.addItem(NSMenuItem(title: "Abrir Canopy Manager", action: #selector(openApp), keyEquivalent: ""))
     menu.addItem(NSMenuItem.separator())
 
-    let statusItem = NSMenuItem(title: "Servidor: Verificando...", action: nil, keyEquivalent: "")
+    let statusItem = NSMenuItem(title: "Chat Multimodal", action: nil, keyEquivalent: "")
     statusItem.isEnabled = false
     menu.addItem(statusItem)
 
-    menu.addItem(NSMenuItem(title: "Iniciar/Parar Servidor", action: #selector(toggleServer), keyEquivalent: ""))
+    menu.addItem(NSMenuItem(title: "Iniciar/Parar Servidor", action: #selector(toggleServerAction), keyEquivalent: ""))
     menu.addItem(NSMenuItem.separator())
 
     let modelsMenu = NSMenuItem(title: "Selecionar Modelo", action: nil, keyEquivalent: "")
@@ -96,19 +91,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   @objc func openApp() {
     NSApp.setActivationPolicy(.regular)
     NSApp.activate(ignoringOtherApps: true)
-    if let window = NSApp.windows.first {
-      window.makeKeyAndOrderFront(nil)
-    }
+    if let window = NSApp.windows.first { window.makeKeyAndOrderFront(nil) }
   }
 
-  @objc func toggleServer() {
+  @objc func toggleServerAction() {
     NotificationCenter.default.post(name: .toggleServer, object: nil)
   }
 
   @objc func selectModel(_ sender: NSMenuItem) {
     if let id = sender.representedObject as? String {
       UserDefaults.standard.set(id, forKey: "selectedModel")
-      NotificationCenter.default.post(name: .toggleServer, object: nil)
     }
   }
 }

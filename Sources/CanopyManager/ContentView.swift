@@ -4,29 +4,22 @@ struct ContentView: View {
   @StateObject private var state = AppState()
 
   var body: some View {
-    HSplitView {
-      // Left panel — main content
-      ScrollView {
-        VStack(alignment: .leading, spacing: 20) {
-          header
-          StatusDashboard().environmentObject(state)
-          Divider()
-          QuickPromptView().environmentObject(state)
-        }
-        .padding(16)
-      }
-      .frame(minWidth: 400)
+    TabView {
+      // Tab 1: Management
+      managementView
+        .tabItem { Label("Gerenciar", systemImage: "server.rack") }
 
-      // Right panel — logs + models
-      VSplitView {
-        ServerLogView().environmentObject(state)
-          .frame(minHeight: 150)
-        ModelManagementView().environmentObject(state)
-          .frame(minHeight: 200)
-      }
-      .frame(minWidth: 320)
+      // Tab 2: Chat Multimodal
+      ChatView()
+        .environmentObject(state)
+        .tabItem { Label("Chat", systemImage: "message.fill") }
+
+      // Tab 3: Models
+      ModelManagementView()
+        .environmentObject(state)
+        .tabItem { Label("Modelos", systemImage: "square.stack.3d.up.fill") }
     }
-    .frame(minWidth: 780, minHeight: 600)
+    .frame(minWidth: 800, minHeight: 600)
     .sheet(isPresented: $state.showDownloadPanel) {
       DownloadPanelView().environmentObject(state)
     }
@@ -39,12 +32,35 @@ struct ContentView: View {
         Button("OK") { state.showError = false }
           .buttonStyle(.borderedProminent)
       }
-      .padding(30)
-      .frame(width: 350)
+      .padding(30).frame(width: 350)
     }
     .onAppear {
       Task { await state.refreshServerStatus() }
       Task { await state.scanModels() }
+    }
+    .onReceive(NotificationCenter.default.publisher(for: .toggleServer)) { _ in
+      Task { await state.toggleServer() }
+    }
+    .onReceive(NotificationCenter.default.publisher(for: .scanModels)) { _ in
+      Task { await state.scanModels() }
+    }
+  }
+
+  var managementView: some View {
+    HSplitView {
+      ScrollView {
+        VStack(alignment: .leading, spacing: 20) {
+          header
+          StatusDashboard().environmentObject(state)
+          Divider()
+          QuickPromptView().environmentObject(state)
+        }
+        .padding(16)
+      }
+      .frame(minWidth: 380)
+
+      ServerLogView().environmentObject(state)
+        .frame(minWidth: 300)
     }
   }
 
@@ -57,22 +73,13 @@ struct ContentView: View {
         Text("MLX Local • Apple Silicon").font(.caption).foregroundStyle(.secondary)
       }
       Spacer()
-
-      Button(action: { state.openCanopy() }) {
-        Label("Canopy", systemImage: "terminal")
-      }
-      .buttonStyle(.bordered)
-      .disabled(!MLXService.checkCanopyInstalled())
-
-      Button(action: {
+      Button("Settings") {
         let view = SettingsView().environmentObject(state)
         let controller = NSHostingController(rootView: view)
         let window = NSWindow(contentViewController: controller)
         window.title = "Configurações"
         window.makeKeyAndOrderFront(nil)
-        NSApplication.shared.activate(ignoringOtherApps: true)
-      }) {
-        Image(systemName: "gearshape")
+        NSApp.activate(ignoringOtherApps: true)
       }
       .buttonStyle(.bordered)
     }
