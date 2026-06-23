@@ -57,6 +57,8 @@ struct ModelsListView: View {
     case .general: .blue
     case .code: .orange
     case .vision: .purple
+    case .reasoning: .yellow
+    case .tiny: .mint
     }
   }
 }

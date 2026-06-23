@@ -145,12 +145,17 @@ class AppState: ObservableObject {
     detectedModel = ""
 
     let text = promptText.trimmingCharacters(in: .whitespaces)
-    let result = await MLXService.runCanopy(prompt: text, mlxDir: settingsMlxDir)
 
+    // Detect model
+    if let model = selectedModel {
+      detectedModel = model.name
+    }
+
+    // Call MLX API directly (no canopy CLI overhead)
+    let result = await MLXChatService.sendMessage(text: text)
     switch result {
-    case .success(let output):
-      detectedModel = output.detectedModel
-      promptOutput = output.response
+    case .success(let response):
+      promptOutput = response.content
     case .failure(let error):
       promptOutput = "❌ \(error.localizedDescription)"
     }

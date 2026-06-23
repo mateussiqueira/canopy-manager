@@ -48,6 +48,8 @@ struct ModelManagementView: View {
     case .general: .blue
     case .code: .orange
     case .vision: .purple
+    case .reasoning: .yellow
+    case .tiny: .mint
     }
   }
 }
@@ -101,6 +103,8 @@ struct ModelRow: View {
     case .general: .blue
     case .code: .orange
     case .vision: .purple
+    case .reasoning: .yellow
+    case .tiny: .mint
     }
   }
 }
